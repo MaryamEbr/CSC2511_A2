@@ -12,6 +12,7 @@ Updated by: Raeid Saqur <raeidsaqur@cs.toronto.edu>
 All of the files in this directory and all subdirectories are:
 Copyright (c) 2022 University of Toronto
 '''
+import numpy as np
 
 '''Calculate BLEU score for one reference and one hypothesis
 
@@ -22,7 +23,7 @@ from math import exp  # exp(x) gives e^x
 from typing import List, Sequence, Iterable
 
 
-def grouper(seq:Sequence[str], n:int) -> List:
+def grouper(seq: Sequence[str], n: int) -> List:
     '''Extract all n-grams from a sequence
 
     An n-gram is a contiguous sub-sequence within `seq` of length `n`. This
@@ -39,10 +40,16 @@ def grouper(seq:Sequence[str], n:int) -> List:
     -------
     ngrams : list
     '''
-    assert False, "Fill me"
+    n_grams = []
+    if (len(seq) > n):
+
+        for i in range(len(seq)-n+1):
+            n_grams.append(seq[i: i+n])
+
+    return n_grams
 
 
-def n_gram_precision(reference:Sequence[str], candidate:Sequence[str], n:int) -> float:
+def n_gram_precision(reference: Sequence[str], candidate: Sequence[str], n: int) -> float:
     '''Calculate the precision for a given order of n-gram
 
     Parameters
@@ -61,10 +68,21 @@ def n_gram_precision(reference:Sequence[str], candidate:Sequence[str], n:int) ->
         The n-gram precision. In the case that the candidate has length 0,
         `p_n` is 0.
     '''
-    assert False, "Fill me"
 
 
-def brevity_penalty(reference:Sequence[str], candidate:Sequence[str]) -> float:
+    ref_ngram_list = grouper(reference, n)
+    can_ngram_list = grouper(candidate, n)
+
+    p_n = 0
+    if len(candidate) != 0 and n < len(candidate):
+        common_grams = [element for element in can_ngram_list if element in ref_ngram_list]
+        p_n = len(common_grams)/len(can_ngram_list)
+
+
+    return p_n
+
+
+def brevity_penalty(reference: Sequence[str], candidate: Sequence[str]) -> float:
     '''Calculate the brevity penalty between a reference and candidate
 
     Parameters
@@ -81,10 +99,20 @@ def brevity_penalty(reference:Sequence[str], candidate:Sequence[str]) -> float:
         The brevity penalty. In the case that the candidate transcription is
         of 0 length, `BP` is 0.
     '''
-    assert False, "Fill me"
+
+    if len(candidate) == 0:
+        BP = 0
+    else:
+        brevity = len(reference) / len(candidate)
+        if brevity < 1:
+            BP = 1
+        else:
+            BP = exp(1 - brevity)
+
+    return BP
 
 
-def BLEU_score(reference:Sequence[str], candidate:Sequence[str], n) -> float:
+def BLEU_score(reference: Sequence[str], candidate: Sequence[str], n) -> float:
     '''Calculate the BLEU score
 
     Parameters
@@ -104,5 +132,44 @@ def BLEU_score(reference:Sequence[str], candidate:Sequence[str], n) -> float:
     bleu : float
         The BLEU score
     '''
-    print("KOOFT")
-    assert False, "Fill me"
+
+    precision = 1
+    for i in range(n):
+        precision = precision * n_gram_precision(reference, candidate, i + 1)
+
+    blue_score = brevity_penalty(reference, candidate) * np.power(precision, 1 / n)
+    return blue_score
+
+
+# ids = 0
+# reference = '''\
+# it is a guide to action that ensures that the military will always heed
+# party commands'''.strip().split()
+# candidate = '''\
+# it is a guide to action which ensures that the military always obeys the
+# commands of the party'''.strip().split()
+# if ids:
+#     # should work with token ids (ints) as well
+#     reference = [hash(word) for word in reference]
+#     candidate = [hash(word) for word in candidate]
+#
+# ## Unigram precision
+# p1_hat = n_gram_precision(reference, candidate, 1)
+# p1 = 15 / 18    # w/o capping
+# assert np.isclose(p1_hat, p1)
+#
+# ## Bi-gram precision
+# p2_hat = n_gram_precision(reference, candidate, 2)
+# p2 = 8/17
+# assert np.isclose(p2_hat, p2)
+#
+# ## BP
+# BP_hat = brevity_penalty(reference, candidate)
+# BP = 1.0
+# assert np.isclose(BP_hat, BP)
+#
+# ## BLEU Score
+# bleu_score_hat = BLEU_score(reference, candidate, 2)
+# bleu_score = BP * (p1 * p2) ** (1 / 2)
+# assert np.isclose(bleu_score_hat, bleu_score)
+#

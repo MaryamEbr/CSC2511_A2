@@ -30,9 +30,7 @@ code fails to run there, you'll get no pity marks! You've been warned!
 Alternatively, you might be on teach, but called 'python3' instead of
 'python3.9'. Use the latter!
 '''
-if (
-        platform.python_version() != '3.9.7' or
-        not torch.__version__.startswith('1.9.1')):
+if (platform.python_version() != '3.9.7' or not torch.__version__.startswith('1.9.1')):
     warnings.warn(BAD_ENV)
 
 
