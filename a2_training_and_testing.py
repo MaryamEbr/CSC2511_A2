@@ -12,6 +12,7 @@ Updated by: Raeid Saqur <raeidsaqur@cs.toronto.edu>
 All of the files in this directory and all subdirectories are:
 Copyright (c) 2022 University of Toronto
 '''
+import a2_run
 
 '''Functions related to training and testing.
 
@@ -85,7 +86,37 @@ def train_for_epoch(
     # If you are running into CUDA memory errors part way through training,
     # try "del F, F_lens, E, logits, loss" at the end of each iteration of
     # the loop.
-    assert False, "Fill me"
+
+    print("-------------------- train for epoch -----------------------")
+
+    # todo1
+    loss_fn = torch.nn.CrossEntropyLoss(ignore_index=model.source_pad_id)
+
+    # todo2
+    for F, F_lens, E in dataloader:
+
+        print("F shape:" , F.shape)
+        print("lens  ",F_lens, " -shape: ", F_lens.shape)
+        print("E shape: ", E.shape)
+        print("---------------------------------------")
+
+        # todo2.1
+        F = F.to(device)
+        F_lens = F_lens.to(device)
+        E = E.to(device)
+
+        # todo2.2, zero out previous gradient
+        optimizer.zero_grad()
+
+        print(model)
+        # todo2.3, forward pass
+        logits = model(F, F_lens, E).to(device)
+
+        print("------   after forward pass ----- ", logits.shape)
+
+
+
+        break
 
 
 def compute_batch_total_bleu(
@@ -159,3 +190,4 @@ def compute_average_bleu_over_dataset(
         sequences
     '''
     assert False, "Fill me"
+

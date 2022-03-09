@@ -431,6 +431,7 @@ class DecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
             F_lens: torch.LongTensor) -> torch.FloatTensor:
         self.check_input(E_tm1, htilde_tm1, h, F_lens)
         if htilde_tm1 is None:
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%R")
             htilde_tm1 = self.get_first_hidden_state(h, F_lens)
             if self.cell_type == 'lstm':
                 # initialize cell state with zeros

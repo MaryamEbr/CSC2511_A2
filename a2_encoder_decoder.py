@@ -73,6 +73,24 @@ class Encoder(EncoderBase):
         # 2. You will need to use the following methods:
         #   self.get_all_rnn_inputs, self.get_all_hidden_states
 
+        print("*** in encoder  ")
+        print("F shape ", F.shape)
+        print("F_Lens ", F_lens)
+        print("h_pad ", h_pad)
+        print("testing this padding thingy  ")
+        print("pad id ", self.pad_id)
+        print("F, m=0 ", F[:,0])
+        print("__________________________")
+        print("F, m=1 ", F[:,1])
+        print("__________________________")
+        print("F, m=2 ", F[:,2])
+        print("__________________________")
+        print("F, m=3 ", F[:,3])
+        print("__________________________")
+        print("F, m=4 ", F[:,4])
+        print("__________________________")
+
+
         x = self.get_all_rnn_inputs(F)
         hid = self.get_all_hidden_states(x, F_lens, h_pad)
         return hid
@@ -81,13 +99,13 @@ class Encoder(EncoderBase):
         # Recall:
         #   F is shape (S, M)
         #   x (output) is shape (S, M, I)
-        ##### ?? is "no word embedding should be learn for padding" affects this?? (I think this part is done correctly)
 
-        # Whenever ``s`` exceeds the original length of ``F[s, m]``
-        # (i.e. when ``F[s, m] == self.pad_id``), ``x[s, m, :] == 0.``
-        ### should we ensure this? or is it done automatically. the embedded zero thingy is automatic
-        ### based on the padding_idx = pad_id that we passed as param to this layer
-        return self.embedding(F)
+        print("*** in get rnn input")
+        x = self.embedding(F)
+        print("embed size: ", x.shape)
+
+        return x
+
 
     def get_all_hidden_states(
             self,
@@ -104,10 +122,19 @@ class Encoder(EncoderBase):
         #   relevant pytorch modules:
         #   torch.nn.utils.rnn.{pad_packed,pack_padded}_sequence
 
+        print("*** in get all hidden states ")
+        print("x shape (embed result): ", x.shape)
+
+
         ### the encoder doesn't process the padding
         packed = torch.nn.utils.rnn.pack_padded_sequence(x, F_lens, enforce_sorted=False)
+
         out, hidden = self.rnn(packed)
+
+        print("after RNN ", self.cell_type)
         seq_unpacked, lens_unpacked = torch.nn.utils.rnn.pad_packed_sequence(sequence=out, padding_value=h_pad)
+        print("seq unpacked shape ",seq_unpacked.shape)
+
         return seq_unpacked
 
 
@@ -132,13 +159,13 @@ class DecoderWithoutAttention(DecoderBase):
         self.ff = torch.nn.Linear(in_features=self.hidden_state_size, out_features=self.target_vocab_size)
 
         if self.cell_type == 'rnn':
-            self.rnn = torch.nn.RNNCell(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size)
+            self.cell = torch.nn.RNNCell(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size)
 
         elif self.cell_type == 'gru':
-            self.rnn = torch.nn.GRUCell(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size)
+            self.cell = torch.nn.GRUCell(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size)
 
         elif self.cell_type == 'lstm':
-            self.rnn = torch.nn.LSTMCell(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size)
+            self.cell = torch.nn.LSTMCell(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size)
 
     def forward_pass(
             self,
@@ -170,6 +197,13 @@ class DecoderWithoutAttention(DecoderBase):
         #   is either initialized, or t > 1.
         # 4. The output of an LSTM cell is a tuple (h, c), but a GRU cell or an
         #   RNN cell will only output h.
+
+
+        print("^^^ YAY, here in decoder forward pass  ")
+        print("E_tm1 shape ", E_tm1.shape)
+        print("E_tm1  ", E_tm1)
+        print("h shape ", h.shape)
+        print("F_lens ", F_lens)
 
         xtilde_t = self.get_current_rnn_input(E_tm1, htilde_tm1, h, F_lens)
 
@@ -203,6 +237,7 @@ class DecoderWithoutAttention(DecoderBase):
         #   t=0
         # 2. Relevant pytorch function: torch.cat
 
+        print("^^^^not here yet^^ get_first_hidden_state")
         # ignore right padded h: h[F_lens[m]:, m]
         forward_states = h[F_lens - 1, torch.arange(F_lens.size(0)), : self.hidden_state_size // 2]
         # indeces are based on the hint
@@ -225,12 +260,17 @@ class DecoderWithoutAttention(DecoderBase):
         #   F_lens is of shape (M,)
         #   xtilde_t (output) is of shape (M, Itilde)
 
+
+        print("^^^ get_current_rnn_input")
+        print("E_tm1 ", E_tm1)
+
         xtilde_t = self.embedding(E_tm1)
+
+        print("after embed, xtilde ", xtilde_t)
 
         ###??? the masked out part that I'm not sure about
         ### it takes the pad_id s in E_tm1 and set corresponding xtilde_t to zero
         ### doesn't embedding layer takes care of this already? we set padding_idx=pad_id in the definition
-
 
         # mask = (E_tm1 != self.pad_id).float().unsqueeze(-1)
         # xtilde_t = xtilde_t * mask
@@ -298,15 +338,15 @@ class DecoderWithAttention(DecoderWithoutAttention):
         ### this is the different part, xtilde is different when we use attention
         ### the size of hidden states are added to the word_embedding_size
         if self.cell_type == 'rnn':
-            self.rnn = torch.nn.RNNCell(input_size=self.hidden_state_size+self.word_embedding_size,
+            self.cell = torch.nn.RNNCell(input_size=self.hidden_state_size + self.word_embedding_size,
                                         hidden_size=self.hidden_state_size)
 
         elif self.cell_type == 'gru':
-            self.rnn = torch.nn.GRUCell(input_size=self.hidden_state_size+self.word_embedding_size,
+            self.cell = torch.nn.GRUCell(input_size=self.hidden_state_size + self.word_embedding_size,
                                         hidden_size=self.hidden_state_size)
 
         elif self.cell_type == 'lstm':
-            self.rnn = torch.nn.LSTMCell(input_size=self.hidden_state_size+self.word_embedding_size,
+            self.cell = torch.nn.LSTMCell(input_size=self.hidden_state_size + self.word_embedding_size,
                                          hidden_size=self.hidden_state_size)
 
     def get_first_hidden_state(
@@ -381,12 +421,14 @@ class DecoderWithAttention(DecoderWithoutAttention):
         alpha_t = self.get_attention_weights(htilde_t, h, F_lens)
 
         ### something needs to be done here.... ????????????
+        ### make sure alpha_t and h are in same direction for element wise operation
+        ### you may need to change the order
+        ### check the shapes in testing
 
         c_t = (alpha_t * h).sum(dim=0)
         ## or
         ### ??? torch.sum(torch.mul(alpha_t, h), dim=0)
         return c_t
-
 
     def get_attention_weights(
             self,
@@ -457,7 +499,11 @@ class DecoderWithMultiHeadAttention(DecoderWithAttention):
         #    should not be lists!
         # 5. You do *NOT* need self.heads at this point
         # 6. Relevant pytorch module: torch.nn.Linear (note: set bias=False!)
-        assert False, "Fill me"
+
+        self.W = torch.nn.Linear(in_features=self.hidden_state_size, out_features=self.hidden_state_size, bias=False)
+        self.Wtilde = torch.nn.Linear(in_features=self.hidden_state_size, out_features=self.hidden_state_size,
+                                      bias=False)
+        self.Q = torch.nn.Linear(in_features=self.hidden_state_size, out_features=self.hidden_state_size, bias=False)
 
     def attend(
             self,
@@ -476,7 +522,18 @@ class DecoderWithMultiHeadAttention(DecoderWithAttention):
         #   tensor([1,2,3,4]).repeat_interleave(2) will output
         #   tensor([1,1,2,2,3,3,4,4]), just like numpy.repeat.
         # 4. You *WILL* need self.heads at this point
-        assert False, "Fill me"
+
+        h = self.W(h)
+        htilde_t = self.Wtilde(htilde_t)
+
+        ### ??? check whether you need to change anything for LSTM here
+
+        ### ??? use view to change the shapes...this is wrong
+        ### there's also partitions based on number of heads
+        ### ??? also use repeat_interleave I guess on F_Lens (based on number of heads)
+        c_t_n = super().attend(htilde_t, h, F_lens)
+
+        return self.Q(c_t_n)
 
 
 class EncoderDecoder(EncoderDecoderBase):
@@ -497,7 +554,22 @@ class EncoderDecoder(EncoderDecoderBase):
         #   self.target_vocab_size, self.target_eos, self.heads
         # 4. Recall that self.target_eos doubles as the decoder pad id since we
         #   never need an embedding for it
-        assert False, "Fill me"
+        self.encoder = encoder_class(source_vocab_size=self.source_vocab_size,
+                                     pad_id=self.source_pad_id,
+                                     word_embedding_size=self.word_embedding_size,
+                                     num_hidden_layers=self.encoder_num_hidden_layers,
+                                     hidden_state_size=self.encoder_hidden_size,
+                                     dropout=self.encoder_dropout,
+                                     cell_type=self.cell_type)
+        self.encoder.init_submodules()
+
+        self.decoder = decoder_class(target_vocab_size=self.target_vocab_size,
+                                     pad_id=self.target_eos,
+                                     word_embedding_size=self.word_embedding_size,
+                                     hidden_state_size=self.encoder_hidden_size * 2,
+                                     cell_type=self.cell_type,
+                                     heads=self.heads)
+        self.decoder.init_submodules()
 
     def get_logits_for_teacher_forcing(
             self,
@@ -514,7 +586,21 @@ class EncoderDecoder(EncoderDecoderBase):
         # 1. Relevant pytorch modules: torch.{zero_like, stack}
         # 2. Recall an LSTM's cell state is always initialized to zero.
         # 3. Note logits sequence dimension is one shorter than E (why?)
-        assert False, "Fill me"
+
+        ##### NOT DONE YET ????? sth alaki
+
+        htilde_tm1 = None
+        logits = []
+
+        # iterate through each time step and add the logits at the step to total logits list
+        for time in range(E.shape[0] - 1):
+            curr_logits, htilde_tm1 = self.decoder.forward_pass(E[time], htilde_tm1, h, F_lens)
+            logits = logits + [curr_logits]
+
+        # no sos
+        logits_t = torch.stack(logits[:], 0)
+
+        return logits_t
 
     def update_beam(
             self,
