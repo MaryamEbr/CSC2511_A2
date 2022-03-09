@@ -338,6 +338,7 @@ class DecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
         super().__init__()
         self.target_vocab_size = target_vocab_size
         self.pad_id = pad_id
+        print("##### NEW NEW in abcs ", pad_id)
         self.word_embedding_size = word_embedding_size
         self.hidden_state_size = hidden_state_size
         self.cell_type = cell_type
@@ -429,10 +430,15 @@ class DecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
                 Tuple[torch.FloatTensor, torch.FloatTensor]]],
             h: torch.FloatTensor,
             F_lens: torch.LongTensor) -> torch.FloatTensor:
+
         self.check_input(E_tm1, htilde_tm1, h, F_lens)
+
         if htilde_tm1 is None:
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%R")
+
             htilde_tm1 = self.get_first_hidden_state(h, F_lens)
+
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%asdfasdfasdfasfasdfasdfasfdasdfasdfasdfR")
+            print("htilde_tm1 shape", htilde_tm1.shape)
             if self.cell_type == 'lstm':
                 # initialize cell state with zeros
                 htilde_tm1 = (htilde_tm1, torch.zeros_like(htilde_tm1))

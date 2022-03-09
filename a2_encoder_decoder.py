@@ -44,7 +44,7 @@ class Encoder(EncoderBase):
         self.embedding = torch.nn.Embedding(num_embeddings=self.source_vocab_size,
                                             embedding_dim=self.word_embedding_size,
                                             padding_idx=self.pad_id)
-
+        print("##### NEW NEW NEW (ENCODER) in init padding_idx ", self.pad_id)
         if self.cell_type == 'rnn':
             self.rnn = torch.nn.RNN(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size,
                                     num_layers=self.num_hidden_layers, dropout=self.dropout, bidirectional=True)
@@ -155,7 +155,7 @@ class DecoderWithoutAttention(DecoderBase):
         self.embedding = torch.nn.Embedding(num_embeddings=self.target_vocab_size,
                                             embedding_dim=self.word_embedding_size,
                                             padding_idx=self.pad_id)
-
+        print("##### NEW NEW NEW (DECODER) in init padding_idx ", self.pad_id)
         self.ff = torch.nn.Linear(in_features=self.hidden_state_size, out_features=self.target_vocab_size)
 
         if self.cell_type == 'rnn':
@@ -195,6 +195,7 @@ class DecoderWithoutAttention(DecoderBase):
         #   self.get_current_logits
         # 3. You can assume that htilde_tm1 is not empty. I.e., the hidden state
         #   is either initialized, or t > 1.
+        ##### ???? but it's empty!!! why why why hwyh qiusfhkjashdflkja
         # 4. The output of an LSTM cell is a tuple (h, c), but a GRU cell or an
         #   RNN cell will only output h.
 
@@ -202,10 +203,13 @@ class DecoderWithoutAttention(DecoderBase):
         print("^^^ YAY, here in decoder forward pass  ")
         print("E_tm1 shape ", E_tm1.shape)
         print("E_tm1  ", E_tm1)
+        # print("htilde_tm1 shape ", htilde_tm1.shape)
+        # print("htilde_tm1 ", htilde_tm1)
         print("h shape ", h.shape)
         print("F_lens ", F_lens)
 
         xtilde_t = self.get_current_rnn_input(E_tm1, htilde_tm1, h, F_lens)
+        print("^^^ in forward pass again xtilde shape", xtilde_t.shape)
 
         htilde_t = self.get_current_hidden_state(xtilde_t, htilde_tm1)
 
@@ -237,12 +241,15 @@ class DecoderWithoutAttention(DecoderBase):
         #   t=0
         # 2. Relevant pytorch function: torch.cat
 
-        print("^^^^not here yet^^ get_first_hidden_state")
+        print("^^^ get_first_hidden_state")
+        print("h shape", h.shape)
+
         # ignore right padded h: h[F_lens[m]:, m]
         forward_states = h[F_lens - 1, torch.arange(F_lens.size(0)), : self.hidden_state_size // 2]
         # indeces are based on the hint
         backward_states = h[0, :, self.hidden_state_size // 2: self.hidden_state_size]
         htilde_0 = torch.cat([forward_states, backward_states], dim=1)
+        print("htilde_0 shape: ", htilde_0.shape)
         return htilde_0
 
     def get_current_rnn_input(
@@ -263,18 +270,18 @@ class DecoderWithoutAttention(DecoderBase):
 
         print("^^^ get_current_rnn_input")
         print("E_tm1 ", E_tm1)
-
         xtilde_t = self.embedding(E_tm1)
 
-        print("after embed, xtilde ", xtilde_t)
+        print("after embed, xtilde shape ", xtilde_t.shape)
 
         ###??? the masked out part that I'm not sure about
         ### it takes the pad_id s in E_tm1 and set corresponding xtilde_t to zero
         ### doesn't embedding layer takes care of this already? we set padding_idx=pad_id in the definition
+        ### tested! I don't think it's necessary...it's equal...whether we take care of it in embedding layer
+        ### or mask it out
 
         # mask = (E_tm1 != self.pad_id).float().unsqueeze(-1)
-        # xtilde_t = xtilde_t * mask
-
+        # xtilde_t_after = xtilde_t * mask
         return xtilde_t
 
     def get_current_hidden_state(
@@ -290,6 +297,9 @@ class DecoderWithoutAttention(DecoderBase):
         #   htilde_tm1 is of shape (M, 2 * H) or a tuple of two of those (LSTM)
         #   htilde_t (output) is of same shape as htilde_tm1
 
+
+        print("^^^ get_current_hidden_state")
+
         ### seperating LSTM becuase it's a tuple
         if self.cell_type == 'lstm':
             htilde_tm1 = [htilde_tm1[0][:, :self.hidden_state_size], htilde_tm1[1][:, :self.hidden_state_size]]
@@ -297,7 +307,6 @@ class DecoderWithoutAttention(DecoderBase):
             htilde_tm1 = htilde_tm1[:, :self.hidden_state_size]
 
         htilde_t = self.cell(xtilde_t, htilde_tm1)
-
         return htilde_t
 
     def get_current_logits(self, htilde_t: torch.FloatTensor) -> torch.FloatTensor:
@@ -307,6 +316,8 @@ class DecoderWithoutAttention(DecoderBase):
 
         ### ??? why forward?
         # return self.ff.forward(htilde_t)
+        print("^^^ get_current_logits")
+        print("logit shape  ", self.ff(htilde_t).shape)
 
         return self.ff(htilde_t)
 
@@ -562,7 +573,8 @@ class EncoderDecoder(EncoderDecoderBase):
                                      dropout=self.encoder_dropout,
                                      cell_type=self.cell_type)
         self.encoder.init_submodules()
-
+        print("#### ENCODER DECODER source pad id ", self.source_pad_id)
+        print("#### ENCODER DECODER target eos ", self.target_eos)
         self.decoder = decoder_class(target_vocab_size=self.target_vocab_size,
                                      pad_id=self.target_eos,
                                      word_embedding_size=self.word_embedding_size,
@@ -588,19 +600,14 @@ class EncoderDecoder(EncoderDecoderBase):
         # 3. Note logits sequence dimension is one shorter than E (why?)
 
         ##### NOT DONE YET ????? sth alaki
+        logits = []  # for holding logits as we do all steps in time
+        h_tilde_tm1 = None
+        for t in range(E.shape[0] - 1):
+            logit, h_tilde_tm1 = self.decoder.forward(E[t], h_tilde_tm1, h, F_lens)
+            logits.append(logit)
+        logits = torch.stack(logits, dim=0)
+        return logits
 
-        htilde_tm1 = None
-        logits = []
-
-        # iterate through each time step and add the logits at the step to total logits list
-        for time in range(E.shape[0] - 1):
-            curr_logits, htilde_tm1 = self.decoder.forward_pass(E[time], htilde_tm1, h, F_lens)
-            logits = logits + [curr_logits]
-
-        # no sos
-        logits_t = torch.stack(logits[:], 0)
-
-        return logits_t
 
     def update_beam(
             self,
