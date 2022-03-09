@@ -8,6 +8,7 @@ model.pt.gz \
 --batch-size 5 \
 --cell-type gru \
 --beam-width 2
+--with-attention
 
 
 

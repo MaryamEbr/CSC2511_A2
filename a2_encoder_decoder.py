@@ -195,7 +195,6 @@ class DecoderWithoutAttention(DecoderBase):
         #   self.get_current_logits
         # 3. You can assume that htilde_tm1 is not empty. I.e., the hidden state
         #   is either initialized, or t > 1.
-        ##### ???? but it's empty!!! why why why hwyh qiusfhkjashdflkja
         # 4. The output of an LSTM cell is a tuple (h, c), but a GRU cell or an
         #   RNN cell will only output h.
 
@@ -365,12 +364,13 @@ class DecoderWithAttention(DecoderWithoutAttention):
             h: torch.FloatTensor,
             F_lens: torch.LongTensor) -> torch.FloatTensor:
         # Hint: For this time, the hidden states should be initialized to zeros.
-        htilde_0 = torch.zeros([h.shape[1], self.hidden_state_size])
+        htilde_0 = torch.zeros_like(h[0])
 
-        ### ???another way to test, see whether they are equal
-        # htilde_0 = torch.zeros([h.shape[1:]])
-        ### also:
-        # htilde_0 = torch.zeros_like(h[0])
+        # htilde_0 = torch.zeros([h.shape[1], self.hidden_state_size])
+        print("^^^ ATTN ^^^ get_first_hidden_state")
+        print("htilde_0  shape", htilde_0.shape)
+        # print("hhh other shape ", h[1].shape)
+        # print("compare ",(torch.zeros_like(h[0]) ==  torch.zeros([h.shape[1], self.hidden_state_size])))
 
         return htilde_0
 
@@ -382,18 +382,27 @@ class DecoderWithAttention(DecoderWithoutAttention):
                 Tuple[torch.FloatTensor, torch.FloatTensor]],
             h: torch.FloatTensor,
             F_lens: torch.LongTensor) -> torch.FloatTensor:
+
+        print("^^^ ATTN ^^^ get_current_rnn_input")
+        print("^^^ before attend ")
+        # print("htilde_tm1 shape ", htilde_tm1.shape)
+        print("h shape ", h.shape)
+        print("Flens ", F_lens)
+
         # Hint: Use attend() for c_t
+
+
+        ### separate LSTM because it's a tuple we only need hidden states
+        if (self.cell_type == 'lstm'):
+            htilde_tm1 = htilde_tm1[0]
+
         c_t = self.attend(htilde_tm1, h, F_lens)
         xtilde_t = self.embedding(E_tm1)
 
-        ### ???? the mask thingy I'm not sure about, here too
-        # mask = (E_tm1 != self.pad_id).float().unsqueeze(-1)
-        # xtilde_t = xtilde_t * mask
-
-        ### ???? do we need to seperate LSTM??? like:
-        # c_t = self.attend(htilde_tm1[0], h, F_lens)
-        ### test later....see what exactly goes into this attend
-
+        print("^^^ last in current rnn input, the xtilde after attend ")
+        print("xtilde (prev) shape ", xtilde_t.shape)
+        print("c_t shape  ", c_t.shape)
+        print("cat shape ", torch.cat([xtilde_t, c_t], dim=1).shape)
         return torch.cat([xtilde_t, c_t], dim=1)
 
     def attend(
@@ -429,16 +438,24 @@ class DecoderWithAttention(DecoderWithoutAttention):
 
         Hint: Use get_attention_weights() to calculate alpha_t.
         '''
+
+
+
         alpha_t = self.get_attention_weights(htilde_t, h, F_lens)
+        print("^^^ back at ATTEND ")
+        print("alpha_t shape (S,M) ", alpha_t.shape)
+        print("h shape (S, M, hidden) ", h.shape)
 
-        ### something needs to be done here.... ????????????
-        ### make sure alpha_t and h are in same direction for element wise operation
-        ### you may need to change the order
-        ### check the shapes in testing
 
-        c_t = (alpha_t * h).sum(dim=0)
-        ## or
-        ### ??? torch.sum(torch.mul(alpha_t, h), dim=0)
+        ### before mul, h and alpha should have same dimension.
+        ### h is (S, M, hidden) and alpha is (S, M)
+        ### to add another dimension to alpha:
+        alpha_t = alpha_t.unsqueeze(2)
+
+        #### ???? is it ok to change alpha shape???
+
+        c_t = torch.sum(torch.mul(alpha_t, h), dim=0)
+        print("c_t shape, last in ATTEND (M, hidden) ", c_t.shape)
         return c_t
 
     def get_attention_weights(
@@ -452,10 +469,13 @@ class DecoderWithAttention(DecoderWithoutAttention):
         # in h have weight 0 and no gradient. You have to implement
         # get_attention_scores()
         # alpha_t (output) is of shape (S, M)
+
+        print("^^^ in get_attention_weights")
         e_t = self.get_attention_scores(htilde_t, h)
         pad_mask = torch.arange(h.shape[0], device=h.device)
         pad_mask = pad_mask.unsqueeze(-1) >= F_lens.to(h.device)  # (S, M)
         e_t = e_t.masked_fill(pad_mask, -float('inf'))
+        print("^^^ IN SCORE checking the final shape of alpha ", torch.nn.functional.softmax(e_t, 0).shape)
         return torch.nn.functional.softmax(e_t, 0)
 
     def get_attention_scores(
@@ -472,19 +492,12 @@ class DecoderWithAttention(DecoderWithoutAttention):
         # Hint:
         # Relevant pytorch function: torch.nn.functional.cosine_similarity
 
-        ### separate LSTM because it's a tuple we only need hidden states
-        if (self.cell_type == 'lstm'):
-            h_t = htilde_t[0]
-        else:
-            h_t = htilde_t
+        print("^^^ in get_attention_scores")
 
-        ###??? may also want to try:
-        ### htilde_t = htilde_t.unsqueeze(0)
-        ## or
-        ### htilde_t = htilde_t.expand_as(h)
-        ### ??? test it
+        htilde_t = htilde_t.unsqueeze(0)
 
         e_t = torch.nn.CosineSimilarity(dim=2)(h, htilde_t)
+        print("e_t shape (S, M) ", e_t.shape)
         return e_t
 
 
@@ -534,15 +547,23 @@ class DecoderWithMultiHeadAttention(DecoderWithAttention):
         #   tensor([1,1,2,2,3,3,4,4]), just like numpy.repeat.
         # 4. You *WILL* need self.heads at this point
 
+        number_of_parts = self.hidden_state_size//self.heads
+        S = h.shape[0]
+        M = h.shape[1]
+
+
         h = self.W(h)
         htilde_t = self.Wtilde(htilde_t)
 
-        ### ??? check whether you need to change anything for LSTM here
+        ### reshape based on heads
+        h = h.view(S, -1, number_of_parts)
+        htilde_t = htilde_t.view(-1, number_of_parts)
 
-        ### ??? use view to change the shapes...this is wrong
-        ### there's also partitions based on number of heads
-        ### ??? also use repeat_interleave I guess on F_Lens (based on number of heads)
-        c_t_n = super().attend(htilde_t, h, F_lens)
+        c_t_n = super().attend(htilde_t, h, F_lens.repeat_interleave(repeats=self.heads))
+
+        ### reshape back
+        c_t_n = c_t_n.view(M, self.hidden_state_size)
+        print("c_t_n shape after ",c_t_n.shape)
 
         return self.Q(c_t_n)
 
@@ -598,14 +619,15 @@ class EncoderDecoder(EncoderDecoderBase):
         # 1. Relevant pytorch modules: torch.{zero_like, stack}
         # 2. Recall an LSTM's cell state is always initialized to zero.
         # 3. Note logits sequence dimension is one shorter than E (why?)
+        # size of logits are 1 shorter, it's probably because of eos? sos?
 
-        ##### NOT DONE YET ????? sth alaki
-        logits = []  # for holding logits as we do all steps in time
+
+        logit_list = []
         h_tilde_tm1 = None
         for t in range(E.shape[0] - 1):
             logit, h_tilde_tm1 = self.decoder.forward(E[t], h_tilde_tm1, h, F_lens)
-            logits.append(logit)
-        logits = torch.stack(logits, dim=0)
+            logit_list.append(logit)
+        logits = torch.stack(logit_list, dim=0)
         return logits
 
 
