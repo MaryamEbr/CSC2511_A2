@@ -87,7 +87,7 @@ def train_for_epoch(
     # try "del F, F_lens, E, logits, loss" at the end of each iteration of
     # the loop.
 
-    print("-------------------- train for epoch -----------------------")
+    # print("-------------------- train for epoch -----------------------")
 
     # todo1
     loss_fn = torch.nn.CrossEntropyLoss(ignore_index=model.source_pad_id)
@@ -96,11 +96,11 @@ def train_for_epoch(
 
     # todo2
     for F, F_lens, E in dataloader:
-
-        print("F shape:" , F.shape)
-        print("lens  ",F_lens, " -shape: ", F_lens.shape)
-        print("E shape: ", E.shape)
-        print("---------------------------------------")
+        #
+        # print("F shape:" , F.shape)
+        # print("lens  ",F_lens, " -shape: ", F_lens.shape)
+        # print("E shape: ", E.shape)
+        # print("---------------------------------------")
 
         # todo2.1
         F = F.to(device)
@@ -110,7 +110,7 @@ def train_for_epoch(
         # todo2.2, zero out previous gradient
         optimizer.zero_grad()
 
-        print(model)
+        # print(model)
         # todo2.3, forward pass
         logits = model(F, F_lens, E).to(device)
 
@@ -137,9 +137,9 @@ def train_for_epoch(
         optimizer.step()
 
         del F, F_lens, E, logits, loss
-        break
 
-    print("-------------------- train for epoch done ----------------------- avg loss ", loss_total/counter)
+
+    # print("-------------------- train for epoch done ----------------------- avg loss ", loss_total/counter)
     return loss_total/counter
 
 
@@ -171,11 +171,27 @@ def compute_batch_total_bleu(
     '''
     # you can use E_ref.tolist() to convert the LongTensor to a python list
     # of numbers
-    print("BLUE BLUE BLUE SCORE BATCH, ")
-    print("E_ref  ", E_ref.shape)
-    print("E_cand  ", E_cand.shape)
-    print(target_sos)
-    print(target_eos)
+    # print("BLUE BLUE BLUE SCORE BATCH, ")
+    # print("E_ref  ", E_ref.shape)
+    # print("E_cand  ", E_cand.shape)
+    # print(target_sos)
+    # print(target_eos)
+    total_blue = 0
+    M = E_ref.shape[-1]
+
+    # print("----------------------------------------------------------------------------------------------------------")
+    for m in range(M):
+        ref = E_ref[:, m].tolist()
+        ref = [r for r in ref if (r != target_sos and r != target_eos)]
+        can = E_cand[:, m].tolist()
+        can = [c for c in can if (c != target_sos and c != target_eos)]
+        # print("ref shape ", len(ref), " can shape ", len(can))
+        # print("M ", m, "score ", a2_bleu_score.BLEU_score(ref, can, 4))
+        total_blue += a2_bleu_score.BLEU_score(ref, can, 4)
+
+    return total_blue
+
+
 
 
 def compute_average_bleu_over_dataset(
@@ -217,7 +233,7 @@ def compute_average_bleu_over_dataset(
         The total BLEU score summed over all sequences divided by the number of
         sequences
     '''
-    print("BLUE BLUE BLUE SCORE TOTAL DS ")
+    # print("BLUE BLUE BLUE SCORE TOTAL DS ")
     total_score = 0
     counter = 0
     for F, F_lens, E_ref in dataloader:
@@ -229,7 +245,8 @@ def compute_average_bleu_over_dataset(
 
         total_score += compute_batch_total_bleu(E_ref, E_cand, target_sos, target_eos)
         counter += F_lens.shape[0]
-        break
-    print("------------- blue over dataset ----------- avg ", total_score / counter)
+
+    # print("------------- blue over dataset ----------- avg ", total_score / counter)
     return total_score / counter
+
 

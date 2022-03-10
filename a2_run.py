@@ -64,9 +64,9 @@ def init(
         decoder_class = a2_encoder_decoder.DecoderWithMultiHeadAttention
     else:
         decoder_class = a2_encoder_decoder.DecoderWithoutAttention
-    print("#### NEW NEWWWWW in run source pad id ", dataloader.dataset.source_pad_id)
-    print("#### NEW NEWWWWW in run target sos ", dataloader.dataset.target_sos)
-    print("#### NEW NEWWWWW in run target eos ", dataloader.dataset.target_eos)
+    # print("#### NEW NEWWWWW in run source pad id ", dataloader.dataset.source_pad_id)
+    # print("#### NEW NEWWWWW in run target sos ", dataloader.dataset.target_sos)
+    # print("#### NEW NEWWWWW in run target eos ", dataloader.dataset.target_eos)
     return a2_encoder_decoder.EncoderDecoder(
         encoder_class, decoder_class,
         dataloader.dataset.source_vocab_size,

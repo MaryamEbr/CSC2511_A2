@@ -44,7 +44,7 @@ class Encoder(EncoderBase):
         self.embedding = torch.nn.Embedding(num_embeddings=self.source_vocab_size,
                                             embedding_dim=self.word_embedding_size,
                                             padding_idx=self.pad_id)
-        print("##### NEW NEW NEW (ENCODER) in init padding_idx ", self.pad_id)
+        # print("##### NEW NEW NEW (ENCODER) in init padding_idx ", self.pad_id)
         if self.cell_type == 'rnn':
             self.rnn = torch.nn.RNN(input_size=self.word_embedding_size, hidden_size=self.hidden_state_size,
                                     num_layers=self.num_hidden_layers, dropout=self.dropout, bidirectional=True)
@@ -73,12 +73,12 @@ class Encoder(EncoderBase):
         # 2. You will need to use the following methods:
         #   self.get_all_rnn_inputs, self.get_all_hidden_states
 
-        print("*** in encoder  ")
-        print("F shape ", F.shape)
-        print("F_Lens ", F_lens)
-        print("h_pad ", h_pad)
-        print("testing this padding thingy  ")
-        print("pad id ", self.pad_id)
+        # print("*** in encoder  ")
+        # print("F shape ", F.shape)
+        # print("F_Lens ", F_lens)
+        # print("h_pad ", h_pad)
+        # print("testing this padding thingy  ")
+        # print("pad id ", self.pad_id)
         # print("F, m=0 ", F[:,0])
         # print("__________________________")
         # print("F, m=1 ", F[:,1])
@@ -100,9 +100,9 @@ class Encoder(EncoderBase):
         #   F is shape (S, M)
         #   x (output) is shape (S, M, I)
 
-        print("*** in get rnn input")
+        # print("*** in get rnn input")
         x = self.embedding(F)
-        print("embed size: ", x.shape)
+        # print("embed size: ", x.shape)
 
         return x
 
@@ -122,8 +122,8 @@ class Encoder(EncoderBase):
         #   relevant pytorch modules:
         #   torch.nn.utils.rnn.{pad_packed,pack_padded}_sequence
 
-        print("*** in get all hidden states ")
-        print("x shape (embed result): ", x.shape)
+        # print("*** in get all hidden states ")
+        # print("x shape (embed result): ", x.shape)
 
 
         ### the encoder doesn't process the padding
@@ -131,9 +131,9 @@ class Encoder(EncoderBase):
 
         out, hidden = self.rnn(packed)
 
-        print("after RNN ", self.cell_type)
+        # print("after RNN ", self.cell_type)
         seq_unpacked, lens_unpacked = torch.nn.utils.rnn.pad_packed_sequence(sequence=out, padding_value=h_pad)
-        print("seq unpacked shape ",seq_unpacked.shape)
+        # print("seq unpacked shape ",seq_unpacked.shape)
 
         return seq_unpacked
 
@@ -155,7 +155,7 @@ class DecoderWithoutAttention(DecoderBase):
         self.embedding = torch.nn.Embedding(num_embeddings=self.target_vocab_size,
                                             embedding_dim=self.word_embedding_size,
                                             padding_idx=self.pad_id)
-        print("##### NEW NEW NEW (DECODER) in init padding_idx ", self.pad_id)
+        # print("##### NEW NEW NEW (DECODER) in init padding_idx ", self.pad_id)
         self.ff = torch.nn.Linear(in_features=self.hidden_state_size, out_features=self.target_vocab_size)
 
         if self.cell_type == 'rnn':
@@ -199,16 +199,16 @@ class DecoderWithoutAttention(DecoderBase):
         #   RNN cell will only output h.
 
 
-        print("^^^ YAY, here in decoder forward pass  ")
-        print("E_tm1 shape ", E_tm1.shape)
-        print("E_tm1  ", E_tm1)
+        # print("^^^ YAY, here in decoder forward pass  ")
+        # print("E_tm1 shape ", E_tm1.shape)
+        # print("E_tm1  ", E_tm1)
         # print("htilde_tm1 shape ", htilde_tm1.shape)
         # print("htilde_tm1 ", htilde_tm1)
-        print("h shape ", h.shape)
-        print("F_lens ", F_lens)
+        # print("h shape ", h.shape)
+        # print("F_lens ", F_lens)
 
         xtilde_t = self.get_current_rnn_input(E_tm1, htilde_tm1, h, F_lens)
-        print("^^^ in forward pass again xtilde shape", xtilde_t.shape)
+        # print("^^^ in forward pass again xtilde shape", xtilde_t.shape)
 
         htilde_t = self.get_current_hidden_state(xtilde_t, htilde_tm1)
 
@@ -240,15 +240,15 @@ class DecoderWithoutAttention(DecoderBase):
         #   t=0
         # 2. Relevant pytorch function: torch.cat
 
-        print("^^^ get_first_hidden_state")
-        print("h shape", h.shape)
+        # print("^^^ get_first_hidden_state")
+        # print("h shape", h.shape)
 
         # ignore right padded h: h[F_lens[m]:, m]
         forward_states = h[F_lens - 1, torch.arange(F_lens.size(0)), : self.hidden_state_size // 2]
         # indeces are based on the hint
         backward_states = h[0, :, self.hidden_state_size // 2: self.hidden_state_size]
         htilde_0 = torch.cat([forward_states, backward_states], dim=1)
-        print("htilde_0 shape: ", htilde_0.shape)
+        # print("htilde_0 shape: ", htilde_0.shape)
         return htilde_0
 
     def get_current_rnn_input(
@@ -267,11 +267,11 @@ class DecoderWithoutAttention(DecoderBase):
         #   xtilde_t (output) is of shape (M, Itilde)
 
 
-        print("^^^ get_current_rnn_input")
-        print("E_tm1 ", E_tm1)
+        # print("^^^ get_current_rnn_input")
+        # print("E_tm1 ", E_tm1)
         xtilde_t = self.embedding(E_tm1)
 
-        print("after embed, xtilde shape ", xtilde_t.shape)
+        # print("after embed, xtilde shape ", xtilde_t.shape)
 
         ###??? the masked out part that I'm not sure about
         ### it takes the pad_id s in E_tm1 and set corresponding xtilde_t to zero
@@ -297,7 +297,7 @@ class DecoderWithoutAttention(DecoderBase):
         #   htilde_t (output) is of same shape as htilde_tm1
 
 
-        print("^^^ get_current_hidden_state")
+        # print("^^^ get_current_hidden_state")
 
         ### seperating LSTM becuase it's a tuple
         if self.cell_type == 'lstm':
@@ -315,8 +315,8 @@ class DecoderWithoutAttention(DecoderBase):
 
         ### ??? why forward?
         # return self.ff.forward(htilde_t)
-        print("^^^ get_current_logits")
-        print("logit shape  ", self.ff(htilde_t).shape)
+        # print("^^^ get_current_logits")
+        # print("logit shape  ", self.ff(htilde_t).shape)
 
         return self.ff(htilde_t)
 
@@ -367,8 +367,8 @@ class DecoderWithAttention(DecoderWithoutAttention):
         htilde_0 = torch.zeros_like(h[0])
 
         # htilde_0 = torch.zeros([h.shape[1], self.hidden_state_size])
-        print("^^^ ATTN ^^^ get_first_hidden_state")
-        print("htilde_0  shape", htilde_0.shape)
+        # print("^^^ ATTN ^^^ get_first_hidden_state")
+        # print("htilde_0  shape", htilde_0.shape)
         # print("hhh other shape ", h[1].shape)
         # print("compare ",(torch.zeros_like(h[0]) ==  torch.zeros([h.shape[1], self.hidden_state_size])))
 
@@ -383,11 +383,11 @@ class DecoderWithAttention(DecoderWithoutAttention):
             h: torch.FloatTensor,
             F_lens: torch.LongTensor) -> torch.FloatTensor:
 
-        print("^^^ ATTN ^^^ get_current_rnn_input")
-        print("^^^ before attend ")
+        # print("^^^ ATTN ^^^ get_current_rnn_input")
+        # print("^^^ before attend ")
         # print("htilde_tm1 shape ", htilde_tm1.shape)
-        print("h shape ", h.shape)
-        print("Flens ", F_lens)
+        # print("h shape ", h.shape)
+        # print("Flens ", F_lens)
 
         # Hint: Use attend() for c_t
 
@@ -399,10 +399,10 @@ class DecoderWithAttention(DecoderWithoutAttention):
         c_t = self.attend(htilde_tm1, h, F_lens)
         xtilde_t = self.embedding(E_tm1)
 
-        print("^^^ last in current rnn input, the xtilde after attend ")
-        print("xtilde (prev) shape ", xtilde_t.shape)
-        print("c_t shape  ", c_t.shape)
-        print("cat shape ", torch.cat([xtilde_t, c_t], dim=1).shape)
+        # print("^^^ last in current rnn input, the xtilde after attend ")
+        # print("xtilde (prev) shape ", xtilde_t.shape)
+        # print("c_t shape  ", c_t.shape)
+        # print("cat shape ", torch.cat([xtilde_t, c_t], dim=1).shape)
         return torch.cat([xtilde_t, c_t], dim=1)
 
     def attend(
@@ -442,9 +442,9 @@ class DecoderWithAttention(DecoderWithoutAttention):
 
 
         alpha_t = self.get_attention_weights(htilde_t, h, F_lens)
-        print("^^^ back at ATTEND ")
-        print("alpha_t shape (S,M) ", alpha_t.shape)
-        print("h shape (S, M, hidden) ", h.shape)
+        # print("^^^ back at ATTEND ")
+        # print("alpha_t shape (S,M) ", alpha_t.shape)
+        # print("h shape (S, M, hidden) ", h.shape)
 
 
         ### before mul, h and alpha should have same dimension.
@@ -455,7 +455,7 @@ class DecoderWithAttention(DecoderWithoutAttention):
         #### ???? is it ok to change alpha shape???
 
         c_t = torch.sum(torch.mul(alpha_t, h), dim=0)
-        print("c_t shape, last in ATTEND (M, hidden) ", c_t.shape)
+        # print("c_t shape, last in ATTEND (M, hidden) ", c_t.shape)
         return c_t
 
     def get_attention_weights(
@@ -470,12 +470,12 @@ class DecoderWithAttention(DecoderWithoutAttention):
         # get_attention_scores()
         # alpha_t (output) is of shape (S, M)
 
-        print("^^^ in get_attention_weights")
+        # print("^^^ in get_attention_weights")
         e_t = self.get_attention_scores(htilde_t, h)
         pad_mask = torch.arange(h.shape[0], device=h.device)
         pad_mask = pad_mask.unsqueeze(-1) >= F_lens.to(h.device)  # (S, M)
         e_t = e_t.masked_fill(pad_mask, -float('inf'))
-        print("^^^ IN SCORE checking the final shape of alpha ", torch.nn.functional.softmax(e_t, 0).shape)
+        # print("^^^ IN SCORE checking the final shape of alpha ", torch.nn.functional.softmax(e_t, 0).shape)
         return torch.nn.functional.softmax(e_t, 0)
 
     def get_attention_scores(
@@ -492,12 +492,12 @@ class DecoderWithAttention(DecoderWithoutAttention):
         # Hint:
         # Relevant pytorch function: torch.nn.functional.cosine_similarity
 
-        print("^^^ in get_attention_scores")
+        # print("^^^ in get_attention_scores")
 
         htilde_t = htilde_t.unsqueeze(0)
 
         e_t = torch.nn.CosineSimilarity(dim=2)(h, htilde_t)
-        print("e_t shape (S, M) ", e_t.shape)
+        # print("e_t shape (S, M) ", e_t.shape)
         return e_t
 
 
@@ -563,7 +563,7 @@ class DecoderWithMultiHeadAttention(DecoderWithAttention):
 
         ### reshape back
         c_t_n = c_t_n.view(M, self.hidden_state_size)
-        print("c_t_n shape after ",c_t_n.shape)
+        # print("c_t_n shape after ",c_t_n.shape)
 
         return self.Q(c_t_n)
 
@@ -594,8 +594,8 @@ class EncoderDecoder(EncoderDecoderBase):
                                      dropout=self.encoder_dropout,
                                      cell_type=self.cell_type)
         self.encoder.init_submodules()
-        print("#### ENCODER DECODER source pad id ", self.source_pad_id)
-        print("#### ENCODER DECODER target eos ", self.target_eos)
+        # print("#### ENCODER DECODER source pad id ", self.source_pad_id)
+        # print("#### ENCODER DECODER target eos ", self.target_eos)
         self.decoder = decoder_class(target_vocab_size=self.target_vocab_size,
                                      pad_id=self.target_eos,
                                      word_embedding_size=self.word_embedding_size,
@@ -628,7 +628,7 @@ class EncoderDecoder(EncoderDecoderBase):
             logit, h_tilde_tm1 = self.decoder.forward(E[t], h_tilde_tm1, h, F_lens)
             logit_list.append(logit)
         logits = torch.stack(logit_list, dim=0)
-        print("^^^^ in teacher forcing logit shape  ", logits.shape)
+        # print("^^^^ in teacher forcing logit shape  ", logits.shape)
         return logits
 
 
@@ -658,7 +658,7 @@ class EncoderDecoder(EncoderDecoderBase):
         #   torch.{flatten, topk, unsqueeze, expand_as, gather, cat}
         # 2. If you flatten a two-dimensional array of shape z of (A, B),
         #   then the element z[a, b] maps to z'[a*B + b]
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ FINALLY BEAM BEAM")
+        # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ FINALLY BEAM BEAM")
         # print("htilde_t: ",htilde_t.shape)
         # print("btm1_1: ", b_tm1_1.shape)
         # print("logpb_tm1: ", logpb_tm1.shape)
@@ -686,7 +686,7 @@ class EncoderDecoder(EncoderDecoderBase):
         else:
             b_t_0 = torch.gather(htilde_t, dim=1, index=torch.unsqueeze(paths, dim=2).expand_as(htilde_t))
 
-        print("b_t_0 shape ", b_t_0.shape)
-        print("b_t_1 shape ", b_t_1.shape)
-        print("logpb_t shape ", logpb_t.shape)
+        # print("b_t_0 shape ", b_t_0.shape)
+        # print("b_t_1 shape ", b_t_1.shape)
+        # print("logpb_t shape ", logpb_t.shape)
         return b_t_0, b_t_1, logpb_t
