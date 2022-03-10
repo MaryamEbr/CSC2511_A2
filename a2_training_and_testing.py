@@ -91,6 +91,8 @@ def train_for_epoch(
 
     # todo1
     loss_fn = torch.nn.CrossEntropyLoss(ignore_index=model.source_pad_id)
+    loss_total = 0
+    counter = 0
 
     # todo2
     for F, F_lens, E in dataloader:
@@ -112,11 +114,33 @@ def train_for_epoch(
         # todo2.3, forward pass
         logits = model(F, F_lens, E).to(device)
 
-        print("------   after forward pass ----- ", logits.shape)
+        # todo2.4
+        # Modifies ``E`` for the loss function, getting rid of a token and replacing excess end - of - sequence
+        # tokens with padding using  ``model.get_target_padding_mask()`` and ``torch.masked_fill``
+        E = E[1:, :] # for sos
+        E = E.masked_fill(model.get_target_padding_mask(E), model.source_pad_id)
 
+        # todo2.5
+        # Flattens out the sequence dimension into the batch dimension of both ``logits`` and ``E``
+        logits = torch.flatten(logits, start_dim=0, end_dim=1)
+        E = torch.flatten(E, start_dim=0)
 
+        # todo6, loss
+        loss = loss_fn(logits, E)
+        loss_total += loss.item()
+        counter += 1
 
+        # todo7, backward
+        loss.backward()
+
+        # todo8, optimizer
+        optimizer.step()
+
+        del F, F_lens, E, logits, loss
         break
+
+    print("-------------------- train for epoch done ----------------------- avg loss ", loss_total/counter)
+    return loss_total/counter
 
 
 def compute_batch_total_bleu(
@@ -147,7 +171,11 @@ def compute_batch_total_bleu(
     '''
     # you can use E_ref.tolist() to convert the LongTensor to a python list
     # of numbers
-    assert False, "Fill me"
+    print("BLUE BLUE BLUE SCORE BATCH, ")
+    print("E_ref  ", E_ref.shape)
+    print("E_cand  ", E_cand.shape)
+    print(target_sos)
+    print(target_eos)
 
 
 def compute_average_bleu_over_dataset(
@@ -189,5 +217,19 @@ def compute_average_bleu_over_dataset(
         The total BLEU score summed over all sequences divided by the number of
         sequences
     '''
-    assert False, "Fill me"
+    print("BLUE BLUE BLUE SCORE TOTAL DS ")
+    total_score = 0
+    counter = 0
+    for F, F_lens, E_ref in dataloader:
+        F = F.to(device)
+        F_lens = F_lens.to(device)
+
+        b_1 = model(F, F_lens).to(device)
+        E_cand = b_1[:, :, 0]
+
+        total_score += compute_batch_total_bleu(E_ref, E_cand, target_sos, target_eos)
+        counter += F_lens.shape[0]
+        break
+    print("------------- blue over dataset ----------- avg ", total_score / counter)
+    return total_score / counter
 

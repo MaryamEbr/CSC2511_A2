@@ -437,8 +437,6 @@ class DecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
 
             htilde_tm1 = self.get_first_hidden_state(h, F_lens)
 
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%@#$%asdfasdfasdfasfasdfasdfasfdasdfasdfasdfR")
-            print("htilde_tm1 shape", htilde_tm1.shape)
             if self.cell_type == 'lstm':
                 # initialize cell state with zeros
                 htilde_tm1 = (htilde_tm1, torch.zeros_like(htilde_tm1))
@@ -964,6 +962,7 @@ class EncoderDecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
             F_lens: torch.LongTensor,
             max_T: int,
             on_max: Optional[str] = None) -> torch.LongTensor:
+
         if on_max is None:
             on_max = self.on_max
 
@@ -1029,6 +1028,7 @@ class EncoderDecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
             if self.greedy:
                 b_t_0, b_t_1, logpb_t = self.update_greedy(
                     htilde_t, b_tm1_1, logpb_tm1, logpy_t)
+
             else:
                 b_t_0, b_t_1, logpb_t = self.update_beam(
                     htilde_t, b_tm1_1, logpb_tm1, logpy_t)

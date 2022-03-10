@@ -79,16 +79,16 @@ class Encoder(EncoderBase):
         print("h_pad ", h_pad)
         print("testing this padding thingy  ")
         print("pad id ", self.pad_id)
-        print("F, m=0 ", F[:,0])
-        print("__________________________")
-        print("F, m=1 ", F[:,1])
-        print("__________________________")
-        print("F, m=2 ", F[:,2])
-        print("__________________________")
-        print("F, m=3 ", F[:,3])
-        print("__________________________")
-        print("F, m=4 ", F[:,4])
-        print("__________________________")
+        # print("F, m=0 ", F[:,0])
+        # print("__________________________")
+        # print("F, m=1 ", F[:,1])
+        # print("__________________________")
+        # print("F, m=2 ", F[:,2])
+        # print("__________________________")
+        # print("F, m=3 ", F[:,3])
+        # print("__________________________")
+        # print("F, m=4 ", F[:,4])
+        # print("__________________________")
 
 
         x = self.get_all_rnn_inputs(F)
@@ -628,6 +628,7 @@ class EncoderDecoder(EncoderDecoderBase):
             logit, h_tilde_tm1 = self.decoder.forward(E[t], h_tilde_tm1, h, F_lens)
             logit_list.append(logit)
         logits = torch.stack(logit_list, dim=0)
+        print("^^^^ in teacher forcing logit shape  ", logits.shape)
         return logits
 
 
@@ -657,4 +658,35 @@ class EncoderDecoder(EncoderDecoderBase):
         #   torch.{flatten, topk, unsqueeze, expand_as, gather, cat}
         # 2. If you flatten a two-dimensional array of shape z of (A, B),
         #   then the element z[a, b] maps to z'[a*B + b]
-        assert False, "Fill me"
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ FINALLY BEAM BEAM")
+        # print("htilde_t: ",htilde_t.shape)
+        # print("btm1_1: ", b_tm1_1.shape)
+        # print("logpb_tm1: ", logpb_tm1.shape)
+        # print("logpy_t: ", logpy_t.shape)
+
+        ### logpb_t
+        ext_paths = logpb_tm1.unsqueeze(-1) + logpy_t
+        ext_paths = ext_paths.view((ext_paths.shape[0]), -1)
+        logpb_t, top_k = torch.topk(ext_paths, k=self.beam_width, dim=-1, largest=True, sorted=True)
+
+        # print("Result of topk  ", logpb_t, " -v ", top_k)
+
+        ### chosen
+        paths = top_k // logpy_t.shape[-1]
+        v_indecies = top_k % logpy_t.shape[-1]
+
+        ### path seq, chech the shapes at the end??
+        b_t_1 = torch.cat([torch.gather(b_tm1_1, dim=2, index=paths.unsqueeze(0).expand_as(b_tm1_1)), v_indecies.unsqueeze(0)],
+                          dim=0)
+
+        ### seperate LSTM
+        if self.decoder.cell_type == "lstm":
+            b_t_0 = (torch.gather(htilde_t[0], dim=1, index=torch.unsqueeze(paths, dim=2).expand_as(htilde_t[0])),
+                     torch.gather(htilde_t[1], dim=1, index=torch.unsqueeze(paths, dim=2).expand_as(htilde_t[1])))
+        else:
+            b_t_0 = torch.gather(htilde_t, dim=1, index=torch.unsqueeze(paths, dim=2).expand_as(htilde_t))
+
+        print("b_t_0 shape ", b_t_0.shape)
+        print("b_t_1 shape ", b_t_1.shape)
+        print("logpb_t shape ", logpb_t.shape)
+        return b_t_0, b_t_1, logpb_t
