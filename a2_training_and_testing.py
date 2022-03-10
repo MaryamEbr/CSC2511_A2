@@ -140,7 +140,7 @@ def train_for_epoch(
 
 
     # print("-------------------- train for epoch done ----------------------- avg loss ", loss_total/counter)
-    return loss_total/counter
+    return torch.div(loss_total, counter)
 
 
 def compute_batch_total_bleu(
@@ -247,6 +247,6 @@ def compute_average_bleu_over_dataset(
         counter += F_lens.shape[0]
 
     # print("------------- blue over dataset ----------- avg ", total_score / counter)
-    return total_score / counter
+    return torch.div(total_score, counter)
 
 
