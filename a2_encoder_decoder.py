@@ -127,7 +127,7 @@ class Encoder(EncoderBase):
 
 
         ### the encoder doesn't process the padding
-        packed = torch.nn.utils.rnn.pack_padded_sequence(x, F_lens, enforce_sorted=False)
+        packed = torch.nn.utils.rnn.pack_padded_sequence(x, F_lens.to('cpu'), enforce_sorted=False)
 
         out, hidden = self.rnn(packed)
 
@@ -672,8 +672,8 @@ class EncoderDecoder(EncoderDecoderBase):
         # print("Result of topk  ", logpb_t, " -v ", top_k)
 
         ### chosen
-        paths = top_k // logpy_t.shape[-1]
-        v_indecies = top_k % logpy_t.shape[-1]
+        paths = torch.div(top_k, logpy_t.shape[-1],  rounding_mode='floor')
+        v_indecies = torch.remainder(top_k, logpy_t.shape[-1])
 
         ### path seq, chech the shapes at the end??
         b_t_1 = torch.cat([torch.gather(b_tm1_1, dim=2, index=paths.unsqueeze(0).expand_as(b_tm1_1)), v_indecies.unsqueeze(0)],
