@@ -90,7 +90,7 @@ def train_for_epoch(
     # print("-------------------- train for epoch -----------------------")
 
     # todo1
-    loss_fn = torch.nn.CrossEntropyLoss(ignore_index=model.source_pad_id)
+    loss_fn = torch.nn.CrossEntropyLoss(ignore_index=-1)
     loss_total = 0
     counter = 0
 

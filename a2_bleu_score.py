@@ -41,7 +41,7 @@ def grouper(seq: Sequence[str], n: int) -> List:
     ngrams : list
     '''
     n_grams = []
-    if (len(seq) > n):
+    if (len(seq) >= n):
 
         for i in range(len(seq)-n+1):
             n_grams.append(seq[i: i+n])
@@ -74,7 +74,7 @@ def n_gram_precision(reference: Sequence[str], candidate: Sequence[str], n: int)
     can_ngram_list = grouper(candidate, n)
 
     p_n = 0
-    if len(candidate) != 0 and n < len(candidate):
+    if len(candidate) != 0 and n <= len(candidate):
         common_grams = [element for element in can_ngram_list if element in ref_ngram_list]
         p_n = len(common_grams)/len(can_ngram_list)
 
@@ -140,7 +140,7 @@ def BLEU_score(reference: Sequence[str], candidate: Sequence[str], n) -> float:
     blue_score = brevity_penalty(reference, candidate) * np.power(precision, 1 / n)
     return blue_score
 
-
+#
 # ids = 0
 # reference = '''\
 # it is a guide to action that ensures that the military will always heed

@@ -22,16 +22,18 @@ import warnings
 from typing import Optional, Union, Tuple, Type, Set
 
 
-# BAD_ENV = '''\
-# It appears you're using an environment that doesn't match teach. Your code will
-# be run in an environment matching that of 'xxx@teach.cs.toronto.edu'. If your
-# code fails to run there, you'll get no pity marks! You've been warned!
-#
-# Alternatively, you might be on teach, but called 'python3' instead of
-# 'python3.9'. Use the latter!
-# '''
-# if (platform.python_version() != '3.9.7' or not torch.__version__.startswith('1.9.1')):
-#     warnings.warn(BAD_ENV)
+BAD_ENV = '''\
+It appears you're using an environment that doesn't match teach. Your code will
+be run in an environment matching that of 'xxx@teach.cs.toronto.edu'. If your
+code fails to run there, you'll get no pity marks! You've been warned!
+
+Alternatively, you might be on teach, but called 'python3' instead of
+'python3.9'. Use the latter!
+'''
+if (
+        platform.python_version() != '3.9.7' or
+        not torch.__version__.startswith('1.9.1')):
+    warnings.warn(BAD_ENV)
 
 
 __all__ = [
@@ -338,7 +340,6 @@ class DecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
         super().__init__()
         self.target_vocab_size = target_vocab_size
         self.pad_id = pad_id
-        # print("##### NEW NEW in abcs ", pad_id)
         self.word_embedding_size = word_embedding_size
         self.hidden_state_size = hidden_state_size
         self.cell_type = cell_type
@@ -430,13 +431,9 @@ class DecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
                 Tuple[torch.FloatTensor, torch.FloatTensor]]],
             h: torch.FloatTensor,
             F_lens: torch.LongTensor) -> torch.FloatTensor:
-
         self.check_input(E_tm1, htilde_tm1, h, F_lens)
-
         if htilde_tm1 is None:
-
             htilde_tm1 = self.get_first_hidden_state(h, F_lens)
-
             if self.cell_type == 'lstm':
                 # initialize cell state with zeros
                 htilde_tm1 = (htilde_tm1, torch.zeros_like(htilde_tm1))
@@ -539,6 +536,7 @@ class DecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_current_rnn_input(
+            self,
             E_tm1: torch.LongTensor,
             htilde_tm1: Union[
                 torch.FloatTensor,
@@ -962,7 +960,6 @@ class EncoderDecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
             F_lens: torch.LongTensor,
             max_T: int,
             on_max: Optional[str] = None) -> torch.LongTensor:
-
         if on_max is None:
             on_max = self.on_max
 
@@ -1028,7 +1025,6 @@ class EncoderDecoderBase(torch.nn.Module, metaclass=abc.ABCMeta):
             if self.greedy:
                 b_t_0, b_t_1, logpb_t = self.update_greedy(
                     htilde_t, b_tm1_1, logpb_tm1, logpy_t)
-
             else:
                 b_t_0, b_t_1, logpb_t = self.update_beam(
                     htilde_t, b_tm1_1, logpb_tm1, logpy_t)
