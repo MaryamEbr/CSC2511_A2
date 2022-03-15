@@ -1,0 +1,183 @@
+**** LSTM
+Without attention:
+Train:
+Epoch 1: loss=3.410878896713257, BLEU=0.2402646392583847
+Epoch 2: loss=2.442970037460327, BLEU=0.26632457971572876
+Epoch 3: loss=1.977178931236267, BLEU=0.28031298518180847
+Epoch 4: loss=1.6272562742233276, BLEU=0.2891900837421417
+Epoch 5: loss=1.3575340509414673, BLEU=0.2932021915912628
+
+Test:
+The average BLEU score over the test set was 0.32948675751686096
+
+With single-headed attention:
+Train:
+Epoch 1: loss=3.1797540187835693, BLEU=0.27627867460250854
+Epoch 2: loss=2.1284286975860596, BLEU=0.3057810962200165
+Epoch 3: loss=1.6586030721664429, BLEU=0.3185303509235382
+Epoch 4: loss=1.3257116079330444, BLEU=0.32551079988479614
+Epoch 5: loss=1.083091139793396, BLEU=0.32556045055389404
+
+Test:
+The average BLEU score over the test set was 0.361995667219162
+
+With multi-headed attention:
+Train:
+Epoch 1: loss=3.311176300048828, BLEU=0.2669709324836731
+Epoch 2: loss=2.258260488510132, BLEU=0.29922235012054443
+Epoch 3: loss=1.830489993095398, BLEU=0.3136630654335022
+Epoch 4: loss=1.5377196073532104, BLEU=0.3221944272518158
+Epoch 5: loss=1.3229268789291382, BLEU=0.3270064890384674
+
+Test:
+The average BLEU score over the test set was 0.37311699986457825
+
+
+
+
+**** RNN
+Without attention:
+Train:
+Epoch 1: loss=3.5214834213256836, BLEU=0.23074758052825928
+Epoch 2: loss=2.87235426902771, BLEU=0.23849910497665405
+Epoch 3: loss=2.64913272857666, BLEU=0.24576961994171143
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 4: loss=2.5199246406555176, BLEU=0.246475949883461
+Epoch 5: loss=2.4410018920898438, BLEU=0.2499508112668991
+
+Test:
+The average BLEU score over the test set was 0.29581934213638306
+
+With single-headed attention:
+Train:
+  warnings.warn(BAD_ENV)
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 1: loss=3.2095789909362793, BLEU=0.2666693329811096
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 2: loss=2.3990890979766846, BLEU=0.2785535156726837
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 3: loss=2.1015026569366455, BLEU=0.2844487130641937
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 4: loss=1.9214930534362793, BLEU=0.28382840752601624
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 5: loss=1.8027671575546265, BLEU=0.2900879681110382
+
+Test:
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+The average BLEU score over the test set was 0.3381935656070709
+
+
+With multi-headed attention:
+Train:
+  warnings.warn(BAD_ENV)
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 1: loss=4.077580451965332, BLEU=0.22835248708724976
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 2: loss=2.7917165756225586, BLEU=0.2553972005844116
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 3: loss=2.499986171722412, BLEU=0.2559944689273834
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 4: loss=2.334564447402954, BLEU=0.2663378417491913
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+Epoch 5: loss=2.227739095687866, BLEU=0.2676231563091278
+
+Test:
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+/home/maryamebr/anaconda3/envs/new-tf-gpu/CSC2511_A2/a2_abcs.py:1000: UserWarning: Beam search not finished by t=100. Halted
+  warnings.warn(f'Beam search not finished by t={t}. Halted')
+The average BLEU score over the test set was 0.3220921754837036
+
+
+
+*** GRU
+1. Without attention:
+Train:
+Epoch 1: loss=2.771009922027588, BLEU=0.3017280697822571
+Epoch 2: loss=1.8244677782058716, BLEU=0.31309929490089417
+Epoch 3: loss=1.4336775541305542, BLEU=0.31637489795684814
+Epoch 4: loss=1.2278473377227783, BLEU=0.31567689776420593
+Epoch 5: loss=1.1121180057525635, BLEU=0.3121306002140045
+
+Test:
+The average BLEU score over the test set was 0.35367587208747864
+
+2. With single-headed attention:
+Train:
+Epoch 1: loss=2.8685035705566406, BLEU=0.29475006461143494
+Epoch 2: loss=1.9521911144256592, BLEU=0.3051273822784424
+Epoch 3: loss=1.5657531023025513, BLEU=0.3128630816936493
+Epoch 4: loss=1.3436716794967651, BLEU=0.31544795632362366
+Epoch 5: loss=1.2092632055282593, BLEU=0.3134279251098633
+
+Test:
+The average BLEU score over the test set was 0.36157143115997314
+
+3. With multi-headed attention:
+Train:
+Epoch 1: loss=4.405467510223389, BLEU=0.23860523104667664
+Epoch 2: loss=2.533280611038208, BLEU=0.27131757140159607
+Epoch 3: loss=2.06412935256958, BLEU=0.2839457392692566
+ Epoch 4: loss=1.7752196788787842, BLEU=0.2929581105709076
+Epoch 5: loss=1.587206244468689, BLEU=0.2957667410373688
+
+Test:
+The average BLEU score over the test set was 0.3466337025165558

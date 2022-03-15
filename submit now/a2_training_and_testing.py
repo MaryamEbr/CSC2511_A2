@@ -93,7 +93,7 @@ def train_for_epoch(
     loss_fn = torch.nn.CrossEntropyLoss(ignore_index=-1)
     loss_total = 0
     counter = 0
-
+        
 
     # todo2
     for F, F_lens, E in dataloader:
@@ -119,7 +119,7 @@ def train_for_epoch(
         # Modifies ``E`` for the loss function, getting rid of a token and replacing excess end - of - sequence
         # tokens with padding using  ``model.get_target_padding_mask()`` and ``torch.masked_fill``
         E = E[1:, :] # for sos
-        E = E.masked_fill(model.get_target_padding_mask(E), model.source_pad_id)
+        E = E.masked_fill(model.get_target_padding_mask(E), -1)
 
         # todo2.5
         # Flattens out the sequence dimension into the batch dimension of both ``logits`` and ``E``
