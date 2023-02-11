@@ -273,14 +273,7 @@ class DecoderWithoutAttention(DecoderBase):
 
         # print("after embed, xtilde shape ", xtilde_t.shape)
 
-        ###??? the masked out part that I'm not sure about
-        ### it takes the pad_id s in E_tm1 and set corresponding xtilde_t to zero
-        ### doesn't embedding layer takes care of this already? we set padding_idx=pad_id in the definition
-        ### tested! I don't think it's necessary...it's equal...whether we take care of it in embedding layer
-        ### or mask it out
 
-        # mask = (E_tm1 != self.pad_id).float().unsqueeze(-1)
-        # xtilde_t_after = xtilde_t * mask
         return xtilde_t
 
     def get_current_hidden_state(
@@ -313,10 +306,6 @@ class DecoderWithoutAttention(DecoderBase):
         #   htilde_t is of shape (M, 2 * H), even for LSTM (cell state discarded)
         #   logits_t (output) is of shape (M, V)
 
-        ### ??? why forward?
-        # return self.ff.forward(htilde_t)
-        # print("^^^ get_current_logits")
-        # print("logit shape  ", self.ff(htilde_t).shape)
 
         return self.ff(htilde_t)
 
